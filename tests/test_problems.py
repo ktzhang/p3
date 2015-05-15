@@ -49,9 +49,19 @@ def test_generator(test_module, python_file, infile, outfile):
     return test
 
 
+counter = 0
+counter2 = 0
+
+
 for problem_dir in glob('../problems/p*'):
+    counter+=1
+    if(counter != 1):
+        continue
     problem = op.basename(problem_dir)
     for infile in glob(op.join(problem_dir, 'in', 'input*.txt')):
+        counter2+=1
+        if(counter2 != 1):
+            break
         input_name = op.splitext(op.basename(infile))[0]
         outfile = op.join(problem_dir, 'out', 'output' + input_name.split('input')[-1] + '.txt')
         name = '%s_%s' % (problem, input_name)
