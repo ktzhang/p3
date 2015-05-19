@@ -16,6 +16,6 @@ X['NT'].domain=['blue']
 X['Q'].domain=['red']
 X['T'].domain=['red']
 X['V'].domain=['red']
-X['WA'].domain=['red']
+X['WA'].domain=['green']
 variable=X['SA']
 value='red'

@@ -22,3 +22,4 @@ def is_consistent(csp, variable, value):
                     return False
 
     return True
+    

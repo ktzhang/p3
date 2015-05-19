@@ -1,17 +1,13 @@
-X=dict([(name, Variable(name,['red','green','blue'])) for name in ['WA','NT','Q','NSW','V','SA','T']])
+V=Variable('V',['red','green','blue'])
+A=Variable('A',['red'])
+B=Variable('B',['red','green','blue'])
+C=Variable('C',['red','blue'])
+D=Variable('D',['violet','magenta'])
 C=[
-    Constraint(X['SA'], X['WA'], operator.ne),
-    Constraint(X['SA'], X['NT'], operator.ne),
-    Constraint(X['SA'], X['Q'], operator.ne),
-    Constraint(X['SA'], X['NSW'], operator.ne),
-    Constraint(X['SA'], X['V'], operator.ne),
-    Constraint(X['WA'], X['NT'], operator.ne),
-    Constraint(X['NT'], X['Q'], operator.ne),
-    Constraint(X['Q'],  X['NSW'], operator.ne),
-    Constraint(X['NSW'],X['V'], operator.ne)
+    Constraint(V, A, operator.ne),
+    Constraint(V, B, operator.ne),
+    Constraint(V, C, operator.ne),
+    Constraint(V, D, operator.ne)
 ]
-csp=BinaryCSP(X.values(),C)
-X['Q'].domain=['blue','red']
-X['WA'].domain=['red']
-X['NT'].domain=['green']
-variable=X['Q']
+csp=BinaryCSP([V,A,B,C,D],C)
+variable=V

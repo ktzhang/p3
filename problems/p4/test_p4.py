@@ -22,8 +22,8 @@ def run_code_from(python_file, input_text):
     module = __import__(os.path.splitext(os.path.basename(python_file))[0])
     test_method = getattr(module, 'ac3')
     exec (input_text, globals(), locals())
-    arcs = locals()['arcs'] if 'arcs' in locals() else None
-    return str(test_method(locals()['csp'], None))
+    arcs = locals()['test_arcs'] if 'test_arcs' in locals() else None
+    return str(test_method(locals()['csp'], arcs))
 
 
 if __name__ == '__main__':

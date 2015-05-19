@@ -30,7 +30,7 @@ def backtracking_search(csp):
 def backtrack(csp):
     """Performs the backtracking search for the given csp.
 
-    If there is a solution, this method returns the successful assignment; otherwise, it returns None.
+    If there is a solution, this method returns True; otherwise, it returns False.
     """
 
     # TODO copy from p3

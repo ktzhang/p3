@@ -73,6 +73,12 @@ class Variables(object):
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, repr(self._variable_list))
 
+    def __contains__(self, item):
+        return item in self._variable_list
+
+    def __getitem__(self, item):
+        return self._variable_list[item]
+
     def begin_transaction(self):
         """Creates a backup of the current domain values so that it can be rolled back."""
         self._stack.append([(variable, deepcopy(variable.domain)) for variable in self._variable_list])
@@ -263,7 +269,7 @@ class Futoshiki(object):
             charmap[str(i)] = str(i)
 
         K = int(sqrt(len(input_text)))
-        N = (K + 1) / 2
+        N = int((K + 1) / 2)
         values = []
         inequalities = []
         for i in range(N):

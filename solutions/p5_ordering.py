@@ -21,8 +21,9 @@ def select_unassigned_variable(csp):
 def order_domain_values(csp, variable):
     """Returns a list of (ordered) domain values for the given variable.
 
-    This method implements the least-constraining-value (LCV) heuristic; that is, the values are
-    ordered in the increasing order of the number choices for the neighboring variables in the constraint graph
+    This method implements the least-constraining-value (LCV) heuristic; that is, the value
+    that rules out the fewest choices for the neighboring variables in the constraint graph
+    are placed before others.
     """
 
     # TODO implement this
