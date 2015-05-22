@@ -3,6 +3,7 @@ __author__ = 'Yoon Ho Han, Kevin Zhang'
 __email__ = 'yhhan@ucsd.edu, ktzhang@ucsd.edu'
 
 from collections import deque
+from operator import itemgetter
 
 
 def inference(csp, variable):
@@ -44,13 +45,14 @@ def backtrack(csp):
             if (is_consistent(csp, var, value)):
                 csp.variables.begin_transaction();
                 var.assign(value);
+                inference(csp, var);
                 result = backtrack(csp);
-                if (result != None):
+                if (result != False):
                     return result;
                 else:
                     # Value didn't work, so backtrack
                     csp.variables.rollback();
-        return None;
+        return False;
 
 def is_consistent(csp, variable, value):
     """Returns True when the variable assignment to value is consistent, i.e. it does not violate any of the constraints
@@ -80,16 +82,69 @@ def is_complete(csp):
 
     return True;
 
+
 def select_unassigned_variable(csp):
     """Selects the next unassigned variable, or None if there is no more unassigned variables
     (i.e. the assignment is complete).
+
+    This method implements the minimum-remaining-values (MRV) and degree heuristic. That is,
+    the variable with the smallest number of values left in its available domain.  If MRV ties,
+    then it picks the variable that is involved in the largest number of constraints on other
+    unassigned variables.
     """
-    return next((variable for variable in csp.variables if not variable.is_assigned()))
+
+    smallestDomain = float("infinity");
+    unassignedVars = deque();
+
+    for variable in csp.variables:
+        currentDomain = len(variable.domain);
+        # length of domain of variable is less than the previous smallest domain, but
+        # variable is unassigned
+        if (currentDomain < smallestDomain and currentDomain != 1):
+            # variable is the new MRV variable
+            unassignedVars.clear();
+            unassignedVars.append(variable);
+            # currentDomain is the new smallestDomain
+            smallestDomain = currentDomain;
+        # length of domain of variable is equal to smallest domain, so add variable to 
+        # queue of variables with the minimum remaining values
+        elif (currentDomain == smallestDomain):
+            unassignedVars.append(variable);
+        # if length of domain is greater than previous smallest domain, skip this variable
+
+    largestConstraints = float("-infinity");
+    # unassignedVars holds the variables with MRV ties
+    for var in unassignedVars:
+        if (len(csp.constraints[var]) > largestConstraints):
+            nextVar = var;
+    return nextVar;
+
 
 def order_domain_values(csp, variable):
     """Returns a list of (ordered) domain values for the given variable.
+
+    This method implements the least-constraining-value (LCV) heuristic; that is, the value
+    that rules out the fewest choices for the neighboring variables in the constraint graph
+    are placed before others.
     """
-    return [value for value in variable.domain]
+
+    # used to sort domain by number of conflicts created
+    valueToConflicts = [];
+    for value in variable.domain:
+        conflicts = 0;
+        # check all neighbors for conflicts
+        for arc in csp.constraints[variable].arcs():
+            conflicts += arc[0].domain.count(value);
+            conflicts += arc[1].domain.count(value);
+        valueToConflicts.append([value, conflicts]);
+        
+    # sort by increasing order of conflicts created
+    valueToConflicts = sorted(valueToConflicts, key=itemgetter(1));
+    newDomain = [];
+    for value in valueToConflicts:
+        newDomain.append(value[0]);
+
+    return newDomain
 
 def ac3(csp, arcs=None):
     """Executes the AC3 or the MAC (p.218 of the textbook) algorithms.
@@ -100,8 +155,7 @@ def ac3(csp, arcs=None):
 
     Note that the current domain of each variable can be retrieved by 'variable.domains'.
 
-    This method returns True if the arc consistency check succeeds, and False otherwise.  Note that this method does not
-    return any additional variable assignments (for simplicity)."""
+    This method returns True if the arc consistency check succeeds, and False otherwise."""
 
     queue_arcs = deque(arcs if arcs is not None else csp.constraints.arcs())
 
@@ -111,7 +165,7 @@ def ac3(csp, arcs=None):
         # check if arc needs to be revised
         if (revise(csp, arc[0], arc[1])):
             # if no more in domain, arc consistency fails
-            if (len(arc[0].domain) == 0):
+            if (len(arc[0].domain) == 0 or len(arc[1].domain) == 0):
                 return False;
             else :
                 # loop through all arcs with arc[0]
@@ -131,13 +185,15 @@ def revise(csp, xi, xj):
         # loop through domain of xj
         for yVal in xj.domain:
             # check if domain for xj satisfies constraints
+            satisfied = True;
             for constraint in csp.constraints[xi, xj]:
-                if (constraint.is_satisfied(xVal, yVal)):
-                    # found is true if any value of xj's domain satisfies constraint
-                    found = True;
+                if (not constraint.is_satisfied(xVal, yVal)):
+                    # satisfied is false if value of xj doesn't satisfy any of the constraints
+                    satisfied = False;
                     break;
             # if any value of domain for xj is consistent, don't have to check any other values
-            if (found):
+            if (satisfied):
+                found = True;
                 break;
         # none of the domain of xj satisfies constraint with xi
         if (not found):

@@ -30,7 +30,7 @@ def ac3(csp, arcs=None):
                 # loop through all arcs with arc[0]
                 for neighbor in csp.constraints[arc[0]].arcs():
                     # skip if neighbor is the same arc
-                    if (neighbor[0] == arc[1] or neighbor[1] == arc[1]):
+                    if (neighbor[0] == arc[0] or neighbor[1] == arc[0]):
                         continue;
                     # add arc to queue if current arc has been revised
                     queue_arcs.append(neighbor);
@@ -44,13 +44,15 @@ def revise(csp, xi, xj):
         # loop through domain of xj
         for yVal in xj.domain:
             # check if domain for xj satisfies constraints
+            satisfied = True;
             for constraint in csp.constraints[xi, xj]:
-                if (constraint.is_satisfied(xVal, yVal)):
-                    # found is true if any value of xj's domain satisfies constraint
-                    found = True;
+                if (not constraint.is_satisfied(xVal, yVal)):
+                    # satisfied is false if value of xj doesn't satisfy any of the constraints
+                    satisfied = False;
                     break;
             # if any value of domain for xj is consistent, don't have to check any other values
-            if (found):
+            if (satisfied):
+                found = True;
                 break;
         # none of the domain of xj satisfies constraint with xi
         if (not found):

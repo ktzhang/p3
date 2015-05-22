@@ -49,7 +49,7 @@ def backtrack(csp):
     """
     # csp is is complete
     if (is_complete(csp)):
-        return csp.assignment;
+        return True;
     else:
         var = select_unassigned_variable(csp);
         # Loop through all possible values for var
